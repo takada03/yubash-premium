@@ -6,7 +6,8 @@ import { fileURLToPath } from 'url'
 const app = express()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-
+import dotenv from 'dotenv'
+dotenv.config()
 const productsPath =
 path.join(__dirname,'data','products.json')
 
@@ -44,8 +45,8 @@ success:false
 
 })
 
-const BOT_TOKEN = '8937562802:AAFfNMcJTDmtbSPCvxyTgxS9FdqpKFzNJjk'
-const CHAT_ID = '-5090014083'
+const BOT_TOKEN = process.env.BOT_TOKEN
+const CHAT_ID = process.env.CHAT_ID
 
 app.post('/order', async(req,res)=>{
 
