@@ -15,7 +15,7 @@ function getProducts(){
 
 const data =
 fs.readFileSync(productsPath,'utf8')
-const PORT = process.env.PORT || 5000
+
 return JSON.parse(data)
 
 }
@@ -159,7 +159,7 @@ res.status(500).json({success:false})
 }
 
 })
-
-app.listen(5000,()=>{
+const PORT = process.env.PORT || 5000
+app.listen(PORT,()=>{
 console.log('SERVER STARTED')
 })
