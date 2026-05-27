@@ -10,7 +10,7 @@ import ProductCard from './components/ProductCard'
 async function fetchProducts(){
 
 const response =
-await fetch('http://localhost:5000/products')
+await fetch('https://yubash-premium-production.up.railway.app/products')
 
 return await response.json()
 
