@@ -21,6 +21,11 @@ return JSON.parse(data)
 }
 app.use(cors())
 app.use(express.json())
+app.get('/',(req,res)=>{
+
+res.send('YUBASH API WORKING')
+
+})
 /* =========================
    PRODUCTS API
 ========================= */
