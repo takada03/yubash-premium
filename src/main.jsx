@@ -37,9 +37,34 @@ return(
 
 <header className='navbar'>
 
-<Link className='logo' to='/'>
+<div
+className='logo'
+
+onClick={()=>{
+
+window.logoClicks =
+(window.logoClicks || 0) + 1
+
+if(window.logoClicks >= 5){
+
+window.logoClicks = 0
+
+window.location.href =
+'/auth-access'
+
+}
+
+setTimeout(()=>{
+
+window.logoClicks = 0
+
+},2000)
+
+}}
+
+>
 YU<span>BASH</span>
-</Link>
+</div>
 
 <div className='navbar-actions'>
 
