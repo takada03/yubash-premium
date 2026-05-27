@@ -19,7 +19,7 @@ async function loadProduct(){
 try{
 
 const response =
-await fetch('http://localhost:5000/products')
+await fetch('https://yubash-premium-production.up.railway.app/products')
 
 const products =
 await response.json()
