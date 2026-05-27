@@ -133,7 +133,8 @@ YU<span>BASH</span>
 </h1>
 
 <p>
-фывфывфы
+Твой доступ к лучшим
+вещам из Китая.
 </p>
 
 <div className='hero-actions'>
@@ -151,6 +152,109 @@ YU<span>BASH</span>
 </Link>
 
 </div>
+<div className='hero-cards'>
+
+<div className='hero-card'>
+
+<div className='hero-card-icon'>
+
+<svg
+xmlns="http://www.w3.org/2000/svg"
+width="24"
+height="24"
+fill="none"
+stroke="currentColor"
+strokeWidth="2"
+viewBox="0 0 24 24"
+>
+
+<path d="M3 7h18"/>
+<path d="M5 7l1 12h12l1-12"/>
+<path d="M9 7V5a3 3 0 0 1 6 0v2"/>
+
+</svg>
+
+</div>
+
+<h3>
+Проверенные товары
+</h3>
+
+<p>
+Отбираем лучшие вещи
+и проверенных продавцов
+из Китая.
+</p>
+
+</div>
+
+<div className='hero-card'>
+
+<div className='hero-card-icon'>
+
+<svg
+xmlns="http://www.w3.org/2000/svg"
+width="24"
+height="24"
+fill="none"
+stroke="currentColor"
+strokeWidth="2"
+viewBox="0 0 24 24"
+>
+
+<path d="M3 12h18"/>
+<path d="M3 6h18"/>
+<path d="M3 18h18"/>
+
+</svg>
+
+</div>
+
+<h3>
+Редкие позиции
+</h3>
+
+<p>
+Помогаем находить вещи,
+которые сложно заказать
+самостоятельно.
+</p>
+</div>
+
+<div className='hero-card'>
+
+<div className='hero-card-icon'>
+
+<svg
+xmlns="http://www.w3.org/2000/svg"
+width="24"
+height="24"
+fill="none"
+stroke="currentColor"
+strokeWidth="2"
+viewBox="0 0 24 24"
+>
+
+<path d="M12 2v20"/>
+<path d="M2 12h20"/>
+<circle cx="12" cy="12" r="9"/>
+
+</svg>
+
+</div>
+
+<h3>
+Доставка по СНГ
+</h3>
+
+<p>
+Быстрая доставка по Беларуси,
+России и другим странам СНГ.
+</p>
+
+</div>
+
+</div>
 <motion.img
 src={logo}
 className='hero-logo'
@@ -164,6 +268,7 @@ transition={{duration:.8}}
 </section>
 )
 }
+
 
 function Catalog({cart,setCart}){
 const [products,setProducts]=useState([])
