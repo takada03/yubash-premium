@@ -31,6 +31,8 @@ className='card-link'
 <img
 src={product.image}
 className='premium-image'
+loading='lazy'
+decoding='async'
 />
 
 <div className='premium-overlay'></div>

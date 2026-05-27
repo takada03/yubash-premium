@@ -60,16 +60,24 @@ onClick={onClose}
 <X size={20}/>
 </button>
 
-<div className='size-modal-image-wrap'>
+{/* LEFT SIDE */}
+
+<div className='size-modal-left'>
 
 <img
 src={product.image}
 className='size-modal-image'
+loading='lazy'
+decoding='async'
 />
+
+<div className='modal-image-overlay'></div>
 
 </div>
 
-<div className='size-modal-content'>
+{/* RIGHT SIDE */}
+
+<div className='size-modal-right'>
 
 <p className='size-modal-badge'>
 SELECT SIZE
@@ -101,7 +109,16 @@ onClick={()=>
 setSelectedSize(size.size)
 }
 >
+
 {size.size}
+{size.stock === 0 && (
+<span className='sold-out-text'>
+SOLD OUT
+</span>
+)}
+
+
+
 </button>
 
 ))}

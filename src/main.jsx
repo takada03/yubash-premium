@@ -1,20 +1,29 @@
 import logo from './assets/logo.png'
+import {uploadImage} from './lib/uploadImage'
 import React,{useState,useEffect} from 'react'
 import ReactDOM from 'react-dom/client'
 import {BrowserRouter,Routes,Route,Link,useNavigate,Navigate,useLocation} from 'react-router-dom'
 import {AnimatePresence,motion} from 'framer-motion'
+import {
+ShoppingBag,
+House,
+Grid2x2
+} from 'lucide-react'
 import './styles.css'
+import {loadProducts} from './data/loadProducts'
 import ProductPage from './pages/ProductPage'
 import ProductCard from './components/ProductCard'
+import toast,{Toaster} from 'react-hot-toast'
+import {
+createProduct,
+deleteProduct,
+updateProduct
+} from './lib/productsApi'
+import {
+Plus,
+Minus
+} from 'lucide-react'
 
-async function fetchProducts(){
-
-const response =
-await fetch('https://yubash-premium-production.up.railway.app/products')
-
-return await response.json()
-
-}
 
 function Protected({children}){
 return localStorage.getItem('yb_admin')==='true'
@@ -23,17 +32,54 @@ return localStorage.getItem('yb_admin')==='true'
 }
 
 function Navbar({cart}){
-return(
-<header className='navbar'>
-<Link to='/' className='logo'>YU<span>BASH</span></Link>
 
-<nav>
-<Link to='/'>Главная</Link>
-<Link to='/catalog'>Каталог</Link>
-<Link to='/cart'>Корзина ({cart.length})</Link>
-</nav>
+return(
+
+<header className='navbar'>
+
+<Link className='logo' to='/'>
+YU<span>BASH</span>
+</Link>
+
+<div className='navbar-actions'>
+
+<Link
+to='/'
+className='nav-icon-btn'
+>
+<House size={18}/>
+</Link>
+
+<Link
+to='/catalog'
+className='nav-icon-btn'
+>
+<Grid2x2 size={18}/>
+</Link>
+
+<Link
+to='/cart'
+className='cart-link'
+>
+
+<ShoppingBag size={20}/>
+
+{cart?.length > 0 && (
+
+<span className='cart-count'>
+{cart.length}
+</span>
+
+)}
+
+</Link>
+
+</div>
+
 </header>
+
 )
+
 }
 
 function Home(){
@@ -95,19 +141,39 @@ const [products,setProducts]=useState([])
 
 useEffect(()=>{
 
+let mounted = true
+
 async function load(){
 
-const data = await fetchProducts()
+try{
+
+const data = await loadProducts()
+
+if(mounted){
 
 setProducts(data)
 
 }
 
+}catch(err){
+
+console.log(err)
+
+}
+
+}
+
 load()
 
-const interval = setInterval(load,120000)
+const interval = setInterval(load,30000)
 
-return()=>clearInterval(interval)
+return()=>{
+
+mounted = false
+
+clearInterval(interval)
+
+}
 
 },[])
 
@@ -137,7 +203,6 @@ setCart={setCart}
 function Cart({cart,setCart}){
 
 const [open,setOpen] = useState(false)
-
 const [name,setName] = useState('')
 const [phone,setPhone] = useState('')
 const [telegram,setTelegram] = useState('')
@@ -176,12 +241,11 @@ total
 
 setOpen(false)
 
-alert('Заказ отправлен')
+toast.success('Заказ успешно отправлен')
 
 }catch(err){
 
-alert('Ошибка отправки')
-
+toast.error('Ошибка отправки заказа')
 }
 
 }
@@ -256,7 +320,7 @@ onClick={()=>remove(index)}
 
 <div className='modal-wrap'>
 
-<div className='modal'>
+<div className='checkout-modal'>
 
 <h2>Оформление заказа</h2>
 
@@ -285,19 +349,23 @@ value={comment}
 onChange={e=>setComment(e.target.value)}
 />
 
+<div className='checkout-actions'>
+
 <button onClick={submit}>
 Отправить заказ
 </button>
 
 <button
 className='secondary full'
-onClick={()=>setOpen(false)}
+onClick={()=>setOpen(false)
+    
+}
 >
 Закрыть
 </button>
 
 </div>
-
+</div>
 </div>
 
 )}
@@ -342,13 +410,13 @@ Login
 }
 
 function Admin(){
-
+const [editing,setEditing] = useState(null)
 const [products,setProducts]=useState([])
 useEffect(()=>{
 
 async function load(){
 
-const data = await fetchProducts()
+const data = await loadProducts()
 
 setProducts(data)
 
@@ -362,39 +430,74 @@ const [open,setOpen]=useState(false)
 const [name,setName]=useState('')
 const [price,setPrice]=useState('')
 const [image,setImage]=useState('')
+const [sizes,setSizes] = useState([
+{
+size:'S',
+stock:0
+}
+])
 
-const revenue = products.reduce((a,b)=>a+(b.price*b.sales),0)
-const orders = products.reduce((a,b)=>a+b.sales,0)
+const revenue = 0
+const orders = 0
 
-const add=()=>{
+const add = async()=>{
 
 if(!name || !price || !image) return
 
-const updated=[
-...products,
-{
-id:Date.now(),
-name,
-price:Number(price),
-image,
-sales:0
-}
-]
+const product = {
 
-setProducts(updated)
-saveProducts(updated)
+name,
+
+price:Number(price),
+
+image,
+
+sizes:sizes,
+
+active:true
+
+}
+
+const created =
+await createProduct(product)
+
+if(created){
+
+toast.success('Товар добавлен')
+
+const data = await loadProducts()
+
+setProducts(data)
 
 setOpen(false)
 
 setName('')
 setPrice('')
 setImage('')
+setSizes([
+{
+size:'S',
+stock:0
+}
+])
+}else{
+
+toast.error('Ошибка добавления')
+
 }
 
-const remove=(id)=>{
-const updated = products.filter(p=>p.id!==id)
-setProducts(updated)
-saveProducts(updated)
+}
+
+const remove = async(product)=>{
+
+await deleteProduct(product)
+
+toast.success('Товар удален')
+
+const data = await loadProducts()
+
+setProducts(data)
+
 }
 
 return(
@@ -465,12 +568,23 @@ Logout
 </div>
 </div>
 
+<div className='admin-actions'>
+
+<button
+className='edit-btn'
+onClick={()=>setEditing(product)}
+>
+Edit
+</button>
+
 <button
 className='danger'
-onClick={()=>remove(product.id)}
+onClick={()=>remove(product)}
 >
 Delete
 </button>
+
+</div>
 
 </div>
 
@@ -479,7 +593,196 @@ Delete
 </div>
 
 </main>
+{editing && (
 
+<div className='modal-wrap'>
+
+<div className='modal'>
+
+<h2>Редактировать товар</h2>
+
+<input
+value={editing.name}
+onChange={e=>
+setEditing({
+...editing,
+name:e.target.value
+})
+}
+/>
+
+<input
+value={editing.price}
+onChange={e=>
+setEditing({
+...editing,
+price:e.target.value
+})
+}
+/>
+<div className='sizes-editor'>
+
+{editing.sizes?.map((item,index)=>(
+
+<div
+className='size-stock-row'
+key={index}
+>
+
+<input
+className='size-input'
+value={item.size}
+onChange={e=>{
+
+const updated = [...editing.sizes]
+
+updated[index].size =
+e.target.value
+
+setEditing({
+...editing,
+sizes:updated
+})
+
+}}
+/>
+
+<div className='stock-box'>
+
+<button
+
+type='button'
+
+onClick={()=>{
+
+const updated=[...editing.sizes]
+
+updated[index].stock =
+Math.max(
+0,
+updated[index].stock - 1
+)
+
+setEditing({
+...editing,
+sizes:updated
+})
+
+}}
+
+>
+
+
+<Minus size={18}/>
+
+
+</button>
+
+<span>
+{item.stock}
+</span>
+
+<button
+
+type='button'
+
+onClick={()=>{
+
+const updated=[...editing.sizes]
+
+updated[index].stock += 1
+
+setEditing({
+...editing,
+sizes:updated
+})
+
+}}
+
+>
+
+
+<Plus size={18}/>
+
+
+</button>
+
+</div>
+
+</div>
+
+))}
+
+<button
+
+className='add-size-btn'
+
+onClick={()=>{
+
+setEditing({
+...editing,
+sizes:[
+...editing.sizes,
+{
+size:'',
+stock:0
+}
+]
+})
+
+}}
+
+>
+
+Добавить размер
+
+</button>
+
+</div>
+<button
+
+onClick={async()=>{
+
+await updateProduct(
+editing.id,
+{
+name:editing.name,
+price:Number(editing.price),
+sizes:editing.sizes
+}
+)
+
+toast.success('Товар обновлен')
+
+const data =
+await loadProducts()
+
+setProducts(data)
+
+setEditing(null)
+
+}}
+
+>
+
+Сохранить
+
+</button>
+
+<button
+className='secondary full'
+onClick={()=>setEditing(null)}
+>
+
+Закрыть
+
+</button>
+
+</div>
+
+</div>
+
+)}
 {open && (
 
 <div className='modal-wrap'>
@@ -500,12 +803,152 @@ value={price}
 onChange={e=>setPrice(e.target.value)}
 />
 
+<label className='upload-box'>
+
 <input
-placeholder='Ссылка на фото'
-value={image}
-onChange={e=>setImage(e.target.value)}
+type='file'
+accept='image/*'
+hidden
+
+onChange={async e=>{
+
+const file = e.target.files[0]
+
+if(!file) return
+
+const url = await uploadImage(file)
+
+if(url){
+
+setImage(url)
+
+toast.success('Фото загружено')
+
+}
+
+}}
 />
 
+<div className='upload-content'>
+
+📸 Загрузить фото
+
+</div>
+
+</label>
+<div className='sizes-editor'>
+
+<h3 className='sizes-title'>
+Размеры и остатки
+</h3>
+
+{sizes.map((item,index)=>(
+
+<div
+className='size-stock-row'
+key={index}
+>
+
+<input
+className='size-input'
+placeholder='Размер (S, M, L)'
+value={item.size}
+
+onChange={e=>{
+
+const updated=[...sizes]
+
+updated[index].size =
+e.target.value
+
+setSizes(updated)
+
+}}
+/>
+
+<div className='stock-box'>
+
+<button
+
+type='button'
+
+onClick={()=>{
+
+const updated=[...sizes]
+
+updated[index].stock =
+Math.max(
+0,
+updated[index].stock - 1
+)
+
+setSizes(updated)
+
+}}
+
+>
+
+
+<Minus size={18}/>
+
+</button>
+
+<span>
+{item.stock}
+</span>
+
+<button
+
+type='button'
+
+onClick={()=>{
+
+const updated=[...sizes]
+
+updated[index].stock += 1
+
+setSizes(updated)
+
+}}
+
+>
+
+
+<Plus size={18}/>
+
+</button>
+
+</div>
+
+</div>
+
+))}
+
+<button
+
+className='add-size-btn'
+
+type='button'
+
+onClick={()=>{
+
+setSizes([
+...sizes,
+{
+size:'',
+stock:0
+}
+])
+
+}}
+
+>
+
++ Добавить размер
+
+</button>
+
+</div>
 <button onClick={add}>
 Добавить
 </button>
@@ -581,6 +1024,41 @@ setCart={setCart}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
 <BrowserRouter>
+
+<Toaster
+
+position='top-right'
+
+containerStyle={{
+top:100
+}}
+
+toastOptions={{
+
+style:{
+
+zIndex:999999999,
+
+background:'#111',
+
+color:'#fff',
+
+border:
+'1px solid rgba(212,175,55,.15)',
+
+borderRadius:'18px',
+
+padding:'16px',
+
+fontWeight:'600'
+
+}
+
+}}
+
+/>
+
 <AppRoutes/>
+
 </BrowserRouter>
 )

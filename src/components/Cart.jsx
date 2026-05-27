@@ -1,5 +1,4 @@
 function Cart({cart,setCart}){
-
 const [open,setOpen] = useState(false)
 
 const [name,setName] = useState('')
