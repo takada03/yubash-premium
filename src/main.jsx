@@ -23,6 +23,10 @@ import {
 Plus,
 Minus
 } from 'lucide-react'
+import {
+createOrder,
+loadOrders
+} from './lib/ordersApi'
 
 
 function Protected({children}){
@@ -245,36 +249,67 @@ const submit = async()=>{
 
 try{
 
-await fetch('https://yubash-premium-production.up.railway.app/order',{
+const order = {
 
+name,
+phone,
+telegram,
+comment,
+
+cart,
+
+total,
+
+status:'new'
+
+}
+
+const created =
+await createOrder(order)
+await fetch(
+'https://woqiuilaopddnmobkrtv.supabase.co/functions/v1/telegram-order',
+{
 method:'POST',
 
 headers:{
 'Content-Type':'application/json'
 },
 
-body:JSON.stringify({
-name,
-phone,
-telegram,
-comment,
-cart,
-total
-})
+body:JSON.stringify(order)
+}
+)
+if(created){
 
-})
+toast.success(
+'Заказ успешно отправлен'
+)
+
+setCart([])
 
 setOpen(false)
 
-toast.success('Заказ успешно отправлен')
+setName('')
+setPhone('')
+setTelegram('')
+setComment('')
+
+}else{
+
+toast.error(
+'Ошибка отправки заказа'
+)
+
+}
 
 }catch(err){
 
-toast.error('Ошибка отправки заказа')
-}
+toast.error(
+'Ошибка отправки заказа'
+)
 
 }
 
+}
 return(
 
 <section className='page'>

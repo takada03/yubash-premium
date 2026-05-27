@@ -1,45 +1,37 @@
-import {useParams} from 'react-router-dom'
-import {motion} from 'framer-motion'
-import {useState,useEffect} from 'react'
+import {useEffect,useState}
+from 'react'
 
+import {useParams}
+from 'react-router-dom'
 
+import {loadProduct}
+from '../data/loadProducts'
 
-export default function ProductPage({cart,setCart}){
+export default function ProductPage({
+cart,
+setCart
+}){
 
 const {id} = useParams()
 
-const [selectedSize,setSelectedSize] = useState('M')
+const [product,setProduct] =
+useState(null)
 
-const [product,setProduct] = useState(null)
+const [selectedSize,setSelectedSize] =
+useState(null)
 
 useEffect(()=>{
 
-async function loadProduct(){
+async function load(){
 
-try{
+const data =
+await loadProduct(id)
 
-const response =
-await fetch('https://yubash-premium-production.up.railway.app/products')
-
-const products =
-await response.json()
-
-const found =
-products.find(
-p => p.id === Number(id)
-)
-
-setProduct(found)
-
-}catch(err){
-
-console.log(err)
+setProduct(data)
 
 }
 
-}
-
-loadProduct()
+load()
 
 },[id])
 
@@ -47,9 +39,29 @@ if(!product){
 
 return(
 <div className='page'>
-<h2>Товар не найден</h2>
+<h2>
+Товар не найден
+</h2>
 </div>
 )
+
+}
+
+const addToCart = ()=>{
+
+if(!selectedSize){
+
+return
+
+}
+
+setCart([
+...cart,
+{
+...product,
+size:selectedSize
+}
+])
 
 }
 
@@ -59,81 +71,73 @@ return(
 
 <div className='product-layout'>
 
-{/* LEFT */}
-
-<motion.div
-className='product-gallery'
-initial={{opacity:0,x:-40}}
-animate={{opacity:1,x:0}}
-transition={{duration:.5}}
->
+<div className='product-gallery'>
 
 <div className='product-main-image-wrap'>
 
 <img
 src={product.image}
 className='product-main-image'
+alt={product.name}
 />
 
 <div className='image-glow'></div>
 
 </div>
 
-</motion.div>
+</div>
 
-{/* RIGHT */}
-
-<motion.div
-className='product-info'
-initial={{opacity:0,x:40}}
-animate={{opacity:1,x:0}}
-transition={{duration:.5}}
->
+<div className='product-info'>
 
 <div className='product-badge'>
-PREMIUM PRODUCT
+YUBASH PREMIUM
 </div>
 
 <h1>
 {product.name}
 </h1>
 
-<p className='product-price'>
+<div className='product-price'>
 {product.price} BYN
-</p>
+</div>
 
 <p className='product-description'>
-Premium luxury streetwear item inspired by
-modern fashion culture and high-end retailers.
-Designed for clean everyday styling with
-oversized luxury silhouette.
+
+Premium streetwear piece
+from the YUBASH collection.
+
 </p>
 
 <div className='sizes-wrap'>
 
-<h3>Размер</h3>
+<h3>
+Выберите размер
+</h3>
 
 <div className='sizes'>
 
-{product.sizes.map(size => (
+{product.sizes?.map(size=>(
 
 <button
+
 key={size.size}
+
+className={`size-btn ${
+selectedSize === size.size
+? 'active-size'
+: ''
+}`}
 
 disabled={size.stock === 0}
 
-className={
-size.stock === 0
-? 'size-btn disabled-size'
-: selectedSize === size.size
-? 'size-btn active-size'
-: 'size-btn'
+onClick={()=>
+setSelectedSize(size.size)
 }
 
-onClick={()=>setSelectedSize(size.size)}
-
 >
+
 {size.size}
+
 </button>
 
 ))}
@@ -142,26 +146,16 @@ onClick={()=>setSelectedSize(size.size)}
 
 </div>
 
-<div className='product-actions'>
-
 <button
 className='buy-btn'
-onClick={()=>
-setCart([
-...cart,
-{
-...product,
-size:selectedSize
-}
-])
-}
+onClick={addToCart}
 >
+
 Добавить в корзину
+
 </button>
 
 </div>
-
-</motion.div>
 
 </div>
 
