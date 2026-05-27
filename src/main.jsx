@@ -155,7 +155,7 @@ const submit = async()=>{
 
 try{
 
-await fetch('http://localhost:5000/order',{
+await fetch('https://yubash-premium-production.up.railway.app/order',{
 
 method:'POST',
 
