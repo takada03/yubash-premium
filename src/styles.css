@@ -56,7 +56,9 @@ color:var(--gold);
 
 .hero{
 position:relative;
+
 padding-bottom:180px;
+
 min-height:calc(100vh - 90px);
 
 display:flex;
@@ -68,6 +70,33 @@ padding:40px 100px;
 overflow:hidden;
 
 isolation:isolate;
+
+/* PREMIUM BLACK → GOLD */
+
+background:
+
+radial-gradient(
+circle at top right,
+rgba(212,175,55,.22),
+transparent 28%
+),
+
+radial-gradient(
+circle at bottom left,
+rgba(212,175,55,.10),
+transparent 35%
+),
+
+linear-gradient(
+135deg,
+#000000 0%,
+#050505 20%,
+#0b0904 40%,
+#1a1405 60%,
+#2d2208 78%,
+#050505 100%
+);
+
 }
 /* vignette */
 
