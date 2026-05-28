@@ -1,5 +1,5 @@
-import { serve } from
-'https://deno.land/std@0.168.0/http/server.ts'
+import { serve }
+from 'https://deno.land/std@0.168.0/http/server.ts'
 
 serve(async (req) => {
 
@@ -15,18 +15,18 @@ const corsHeaders = {
 
 }
 
-if (req.method === 'OPTIONS') {
+if(req.method === 'OPTIONS'){
 
 return new Response(
 'ok',
 {
-headers: corsHeaders
+headers:corsHeaders
 }
 )
 
 }
 
-try {
+try{
 
 const {
 name,
@@ -37,11 +37,26 @@ cart,
 total
 } = await req.json()
 
+const safeName =
+(name || '')
+.replace(/</g,'')
+.replace(/>/g,'')
+
+const safeTelegram =
+(telegram || '')
+.replace(/</g,'')
+.replace(/>/g,'')
+
+const safeComment =
+(comment || '')
+.replace(/</g,'')
+.replace(/>/g,'')
+
 const BOT_TOKEN =
-'8937562802:AAFfNMcJTDmtbSPCvxyTgxS9FdqpKFzNJjk'
+Deno.env.get('BOT_TOKEN')
 
 const CHAT_ID =
-'-5090014083'
+Deno.env.get('CHAT_ID')
 
 const orderId =
 Math.floor(
@@ -77,13 +92,13 @@ ${date}
 👤 <b>CUSTOMER</b>
 
 Имя:
-${name}
+${safeName}
 
 Телефон:
 ${phone}
 
 Telegram:
-${telegram || 'Не указан'}
+${safeTelegram || 'Не указан'}
 
 ━━━━━━━━━━━━━━━
 
@@ -95,7 +110,7 @@ ${items}
 
 💬 <b>COMMENT</b>
 
-${comment || 'Нет комментария'}
+${safeComment || 'Нет комментария'}
 
 ━━━━━━━━━━━━━━━
 
@@ -109,6 +124,7 @@ ${total} BYN
 
 `
 
+const tg =
 await fetch(
 
 `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
@@ -134,10 +150,45 @@ parse_mode:'HTML'
 
 )
 
+const tgData =
+await tg.json()
+
+console.log(tgData)
+
+if(!tgData.ok){
+
 return new Response(
 
 JSON.stringify({
-success:true
+error:tgData
+}),
+
+{
+status:500,
+
+headers:{
+...corsHeaders,
+'Content-Type':'application/json'
+}
+}
+
+)
+
+}
+
+const messageId =
+tgData.result.message_id
+
+return new Response(
+
+JSON.stringify({
+
+success:true,
+
+messageId,
+
+telegramText:text
+
 }),
 
 {

@@ -14,6 +14,8 @@ import {loadProducts} from './data/loadProducts'
 import ProductPage from './pages/ProductPage'
 import ProductCard from './components/ProductCard'
 import toast,{Toaster} from 'react-hot-toast'
+import {supabase}
+from './lib/supabase'
 import {
 createProduct,
 deleteProduct,
@@ -25,14 +27,32 @@ Minus
 } from 'lucide-react'
 import {
 createOrder,
-loadOrders
+loadOrders,
+updateOrderStatus,
+deleteOrder
 } from './lib/ordersApi'
 
 
 function Protected({children}){
-return localStorage.getItem('yb_admin')==='true'
-? children
-: <Navigate to='/auth-access'/>
+
+const token =
+localStorage.getItem(
+'yb_admin_token'
+)
+
+if(
+!token ||
+token.length < 10
+){
+
+return (
+<Navigate to='/auth-access'/>
+)
+
+}
+
+return children
+
 }
 
 function Navbar({cart}){
@@ -279,19 +299,12 @@ let mounted = true
 
 async function load(){
 
-try{
-
-const data = await loadProducts()
+const productsData =
+await loadProducts()
 
 if(mounted){
 
-setProducts(data)
-
-}
-
-}catch(err){
-
-console.log(err)
+setProducts(productsData)
 
 }
 
@@ -369,8 +382,7 @@ status:'new'
 
 }
 
-const created =
-await createOrder(order)
+const tgResponse =
 await fetch(
 'https://woqiuilaopddnmobkrtv.supabase.co/functions/v1/telegram-order',
 {
@@ -383,6 +395,18 @@ headers:{
 body:JSON.stringify(order)
 }
 )
+
+const tgData =
+await tgResponse.json()
+
+order.telegram_message_id =
+tgData.messageId
+
+order.telegram_text =
+tgData.telegramText
+
+const created =
+await createOrder(order)
 if(created){
 
 toast.success(
@@ -542,52 +566,152 @@ onClick={()=>setOpen(false)
 }
 
 function Login(){
+
 const nav = useNavigate()
 
-function submit(e){
+const [password,setPassword] =
+useState('')
+
+const [loading,setLoading] =
+useState(false)
+
+async function submit(e){
+
 e.preventDefault()
 
-if(e.target.password.value==='yubashadmin2025'){
-localStorage.setItem('yb_admin','true')
-nav('/system-control-panel')
-}else{
-alert('Неверный пароль')
+try{
+
+setLoading(true)
+
+const response =
+await fetch(
+'https://woqiuilaopddnmobkrtv.supabase.co/functions/v1/admin-login',
+{
+method:'POST',
+
+headers:{
+'Content-Type':'application/json'
+},
+
+body:JSON.stringify({
+password
+})
+
 }
+)
+
+const data =
+await response.json()
+
+if(data.success){
+
+localStorage.setItem(
+'yb_admin_token',
+data.token
+)
+
+toast.success(
+'Доступ разрешен'
+)
+
+nav('/system-control-panel')
+
+}else{
+
+toast.error(
+'Неверный пароль'
+)
+
+}
+
+}catch(err){
+
+toast.error(
+'Ошибка авторизации'
+)
+
+}finally{
+
+setLoading(false)
+
+}
+
 }
 
 return(
+
 <section className='auth'>
-<form className='auth-box' onSubmit={submit}>
-<h1>Secure Access</h1>
+
+<form
+className='auth-box'
+onSubmit={submit}
+>
+
+<h1>
+Secure Access
+</h1>
 
 <input
-name='password'
 type='password'
 placeholder='Password'
+value={password}
+onChange={e=>
+setPassword(
+e.target.value
+)
+}
 />
 
-<button type='submit'>
-Login
+<button
+type='submit'
+disabled={loading}
+>
+
+{loading
+? 'Loading...'
+: 'Login'
+}
+
 </button>
+
 </form>
+
 </section>
+
 )
+
 }
 
 function Admin(){
 const [editing,setEditing] = useState(null)
 const [products,setProducts]=useState([])
-useEffect(()=>{
-
+const [tab,setTab] =
+useState('dashboard')
+const [viewing,setViewing] =
+useState(null)
 async function load(){
 
-const data = await loadProducts()
+const productsData =
+await loadProducts()
 
-setProducts(data)
+setProducts(productsData)
+
+const ordersData =
+await loadOrders()
+
+setOrders(
+ordersData || []
+)
 
 }
+useEffect(()=>{
 
 load()
+
+const interval =
+setInterval(load,5000)
+
+return()=>clearInterval(interval)
 
 },[])
 const [open,setOpen]=useState(false)
@@ -602,8 +726,8 @@ stock:0
 }
 ])
 
-const revenue = 0
-const orders = 0
+const [orders,setOrders] =
+useState([])
 
 const add = async()=>{
 
@@ -655,16 +779,26 @@ toast.error('Ошибка добавления')
 
 const remove = async(product)=>{
 
+const deleted =
 await deleteProduct(product)
 
-toast.success('Товар удален')
+if(deleted){
 
-const data = await loadProducts()
+toast.success(
+'Товар удален'
+)
 
-setProducts(data)
+await load()
+
+}else{
+
+toast.error(
+'Ошибка удаления'
+)
 
 }
 
+}
 return(
 <div className='admin'>
 
@@ -672,9 +806,51 @@ return(
 
 <h2>YUBASH ADMIN</h2>
 
-<div className='menu'>Dashboard</div>
-<div className='menu'>Products</div>
-<div className='menu'>Orders</div>
+<div
+className={`menu ${
+tab === 'dashboard'
+? 'active-menu'
+: ''
+}`}
+
+onClick={()=>
+setTab('dashboard')
+}
+>
+
+Dashboard
+
+</div>
+<div
+className={`menu ${
+tab === 'products'
+? 'active-menu'
+: ''
+}`}
+
+onClick={()=>
+setTab('products')
+}
+>
+
+Products
+
+</div>
+<div
+className={`menu ${
+tab === 'orders'
+? 'active-menu'
+: ''
+}`}
+
+onClick={()=>
+setTab('orders')
+}
+>
+
+Orders
+
+</div>
 
 <button onClick={()=>setOpen(true)}>
 Добавить товар
@@ -698,22 +874,38 @@ Logout
 <h2>Dashboard</h2>
 <p>Store analytics & products</p>
 </div>
-
+{tab === 'dashboard' && (
+<>
 <div className='stats'>
 
 <div className='stat'>
 <h3>Orders</h3>
-<p>{orders}</p>
+<p>{orders.length}</p>
 </div>
 
 <div className='stat'>
 <h3>Revenue</h3>
-<p>{revenue} BYN</p>
+<p>
+
+{
+orders
+.reduce(
+(acc,order)=>
+acc + order.total,
+0
+)
+}
+
+BYN
+
+</p>
 </div>
 
 <div className='stat'>
 <h3>Products</h3>
-<p>{products.length}</p>
+<p>
+{products.length}
+</p>
 </div>
 
 </div>
@@ -756,7 +948,304 @@ Delete
 ))}
 
 </div>
+{viewing && (
 
+<div className='modal-wrap'>
+
+<div className='modal'>
+
+<h2>
+Order Details
+</h2>
+
+<div className='order-details'>
+
+<p>
+<b>Name:</b>
+{viewing.name}
+</p>
+
+<p>
+<b>Phone:</b>
+{viewing.phone}
+</p>
+
+<p>
+<b>Address:</b>
+{viewing.address}
+</p>
+
+<p>
+<b>Total:</b>
+{viewing.total} BYN
+</p>
+
+<p>
+<b>Status:</b>
+{viewing.status}
+</p>
+
+</div>
+
+<button
+className='close-btn'
+onClick={()=>
+setViewing(null)
+}
+>
+
+Close
+
+</button>
+
+</div>
+
+</div>
+
+)}
+</>
+)}
+
+{tab === 'products' && (
+
+<div className='box'>
+
+{products.map(product=>(
+
+<div
+className='row'
+key={product.id}
+>
+
+<div className='admin-product'>
+
+<img
+src={product.image}
+className='admin-thumb'
+/>
+
+<div>
+
+<h3>
+{product.name}
+</h3>
+
+<p>
+{product.price} BYN
+</p>
+
+</div>
+
+</div>
+
+<div className='admin-actions'>
+
+<button
+className='edit-btn'
+onClick={()=>
+setEditing(product)
+}
+>
+
+Edit
+
+</button>
+
+<button
+className='danger'
+onClick={()=>
+remove(product)
+}
+>
+
+Delete
+
+</button>
+
+</div>
+
+</div>
+
+))}
+
+</div>
+
+)}
+
+{tab === 'orders' && (
+
+<div className='box'>
+
+{orders.length === 0 ? (
+
+<div className='empty'>
+Заказов пока нет
+</div>
+
+) : (
+
+orders.map(order=>(
+
+<div
+className='row'
+key={order.id}
+>
+
+<div>
+
+<h3>
+{order.name}
+</h3>
+
+<p>
+{order.phone}
+</p>
+
+<p>
+{order.total} BYN
+</p>
+
+<span className={`status ${order.status}`}>
+{order.status}
+</span>
+
+</div>
+
+<div className='admin-actions'>
+
+<button
+className='edit-btn'
+onClick={()=>
+setViewing(order)
+}
+>
+
+Details
+
+</button>
+
+<select
+
+value={order.status}
+
+onChange={async(e)=>{
+
+const newStatus =
+e.target.value
+
+const updated =
+await updateOrderStatus(
+order.id,
+newStatus
+)
+
+if(updated){
+
+await fetch(
+'https://woqiuilaopddnmobkrtv.supabase.co/functions/v1/update-order-status',
+{
+method:'POST',
+
+headers:{
+'Content-Type':'application/json'
+},
+
+body:JSON.stringify({
+
+message_id:
+order.telegram_message_id,
+
+status:newStatus,
+
+text:order.telegram_text
+
+})
+
+}
+)
+
+toast.success(
+'Статус обновлен'
+)
+
+await load()
+
+}else{
+
+toast.error(
+'Ошибка обновления'
+)
+
+}
+
+}}
+
+className='status-select'
+>
+
+<option value='new'>
+New
+</option>
+
+<option value='processing'>
+Processing
+</option>
+
+<option value='shipped'>
+Shipped
+</option>
+
+<option value='done'>
+Done
+</option>
+
+</select>
+
+<button
+className='danger'
+onClick={async()=>{
+
+const deleted =
+await deleteOrder(order.id)
+
+if(deleted){
+
+setOrders(prev=>
+prev.filter(
+x=>x.id !== order.id
+)
+)
+
+toast.success(
+'Заказ удален'
+)
+
+}else{
+
+toast.error(
+'Ошибка удаления'
+)
+
+}
+
+}}
+>
+
+Delete
+
+</button>
+
+</div>
+
+</div>
+
+))
+
+)}
+
+</div>
+
+)}
 </main>
 {editing && (
 
@@ -1136,11 +1625,70 @@ onClick={()=>setOpen(false)}
 }
 
 function AppRoutes(){
+const [licensed,setLicensed] =
+useState(true)
+useEffect(()=>{
 
+async function checkLicense(){
+
+const {data,error} =
+await supabase
+.from('license')
+.select('active')
+.limit(1)
+.single()
+
+if(error){
+
+console.log(error)
+
+return
+
+}
+
+if(data){
+
+setLicensed(
+Boolean(data.active)
+)
+
+}
+
+}
+
+checkLicense()
+
+const interval =
+setInterval(
+checkLicense,
+10000
+)
+
+return()=>clearInterval(interval)
+
+},[])
 const location = useLocation()
 
 const [cart,setCart]=useState([])
+if(!licensed){
 
+return(
+
+<div className='maintenance'>
+
+<h1>
+YUBASH
+</h1>
+
+<p>
+Service temporarily unavailable
+</p>
+
+</div>
+
+)
+
+}
 return(
 <>
 <Navbar cart={cart}/>
@@ -1185,6 +1733,7 @@ setCart={setCart}
 </div>
 </>
 )
+
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
