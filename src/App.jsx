@@ -6,7 +6,7 @@ import Catalog from './pages/Catalog'
 import Login from './admin/Login'
 import Dashboard from './admin/Dashboard'
 
-const isAuth=()=>localStorage.getItem('yubash_admin')==='true'
+const isAuth=()=>localStorage.getItem('loong_admin')==='true'
 
 function Protected({children}){
 return isAuth()?children:<Navigate to="/secure-login"/>
@@ -29,7 +29,7 @@ transition={{duration:.45}}
 <Route path="/" element={<Home/>}/>
 <Route path="/catalog" element={<Catalog/>}/>
 <Route path="/secure-login" element={<Login/>}/>
-<Route path="/admin-panel-yubash" element={<Protected><Dashboard/></Protected>}/>
+<Route path="/admin-panel-loong" element={<Protected><Dashboard/></Protected>}/>
 </Routes>
 </motion.div>
 </AnimatePresence>

@@ -13,7 +13,7 @@ return(
 </aside>
 
 <main className="admin-content">
-<h1>YuBash Admin Panel</h1>
+<h1>Loong Admin Panel</h1>
 
 <div className="stats-grid">
 <div className="stat-card">

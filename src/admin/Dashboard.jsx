@@ -8,7 +8,7 @@ window.location.href='/'
 return(
 <div className="dashboard">
 <div className="sidebar">
-<h2>YUBASH ADMIN</h2>
+<h2>LOONG ADMIN</h2>
 
 <div className="menu">Dashboard</div>
 <div className="menu">Products</div>

@@ -8,7 +8,7 @@ return(
 <header className='navbar'>
 
 <Link className='logo' to='/'>
-YU<span>BASH</span>
+LOOO<span>NG</span>
 </Link>
 
 <div className='navbar-actions'>

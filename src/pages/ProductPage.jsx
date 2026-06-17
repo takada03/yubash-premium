@@ -90,7 +90,7 @@ alt={product.name}
 <div className='product-info'>
 
 <div className='product-badge'>
-YUBASH PREMIUM
+LOONG PREMIUM
 </div>
 
 <h1>
@@ -104,7 +104,7 @@ YUBASH PREMIUM
 <p className='product-description'>
 
 Premium streetwear piece
-from the YUBASH collection.
+from the LOONG collection.
 
 </p>
 

@@ -18,7 +18,7 @@ PREMIUM STREETWEAR
 </div>
 
 <h1>
-YU<span>BASH</span>
+LOO<span>NG</span>
 </h1>
 
 <p>

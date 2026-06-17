@@ -87,7 +87,7 @@ window.logoClicks = 0
 }}
 
 >
-YU<span>BASH</span>
+LOO<span>NG</span>
 </div>
 
 <div className='navbar-actions'>
@@ -149,7 +149,7 @@ PREMIUM STREETWEAR
 </div>
 
 <h1>
-YU<span>BASH</span>
+LOO<span>NG</span>
 </h1>
 
 <p>
@@ -804,7 +804,7 @@ return(
 
 <aside className='sidebar'>
 
-<h2>YUBASH ADMIN</h2>
+<h2>LOONG ADMIN</h2>
 
 <div
 className={`menu ${
@@ -1677,7 +1677,7 @@ return(
 <div className='maintenance'>
 
 <h1>
-YUBASH
+LOONG
 </h1>
 
 <p>
